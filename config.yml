@@ -1,0 +1,6 @@
+servers:
+  ftp:
+    port: 2121
+    username: user
+    password: pass
+    homeDirectory: ./tmp

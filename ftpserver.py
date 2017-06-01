@@ -1,8 +1,8 @@
-# Copyright (c) Twisted Matrix Laboratories.
-# See LICENSE for details.
+#!/usr/local/bin/python2
 
 """
-An example FTP server with minimal user authentication.
+Testing ftp server with minimal config and authentication.
+WARNING: this server is unsafe and should not be used in production.
 """
 
 from twisted.protocols.ftp import FTPFactory, FTPRealm
@@ -11,53 +11,23 @@ from twisted.cred.checkers import AllowAnonymousAccess, InMemoryUsernamePassword
 from twisted.internet import reactor
 from twisted.python import log
 import sys
-#
-# First, set up a portal (twisted.cred.portal.Portal). This will be used
-# to authenticate user logins, including anonymous logins.
-#
-# Part of this will be to establish the "realm" of the server - the most
-# important task in this case is to establish where anonymous users will
-# have default access to. In a real world scenario this would typically
-# point to something like '/pub' but for this example it is pointed at the
-# current working directory.
-#
-# The other important part of the portal setup is to point it to a list of
-# credential checkers. In this case, the first of these is used to grant
-# access to anonymous users and is relatively simple; the second is a very
-# primitive password checker.  This example uses a plain text password file
-# that has one username:password pair per line. This checker *does* provide
-# a hashing interface, and one would normally want to use it instead of
-# plain text storage for anything remotely resembling a 'live' network. In
-# this case, the file "pass.dat" is used, and stored in the same directory
-# as the server. BAD.
-#
-# Create a pass.dat file which looks like this:
-#
-# =====================
-#   jeff:bozo
-#   grimmtooth:bozo2
-# =====================
-#
+import yaml
 
-ch = InMemoryUsernamePasswordDatabaseDontUse()
-ch.addUser("user", "pass")
-p = Portal(FTPRealm('./tmp', userHome='./tmp'), [AllowAnonymousAccess(), ch])
+with open("./config.yml") as configfile:
+    config = yaml.load(configfile.read())["servers"]["ftp"]
+port = config["port"]
+username = config["username"]
+password = config["password"]
+homeDirectory = config["homeDirectory"]
 
-#
-# Once the portal is set up, start up the FTPFactory and pass the portal to
-# it on startup. FTPFactory will start up a twisted.protocols.ftp.FTP()
-# handler for each incoming OPEN request. Business as usual in Twisted land.
-#
-f = FTPFactory(p)
+userChecker = InMemoryUsernamePasswordDatabaseDontUse()
+userChecker.addUser(username, password)
 
-#
-# You know this part. Point the reactor to port 21 coupled with the above factory,
-# and start the event loop.
-#
-reactor.listenTCP(2121, f)
+ftp = FTPFactory(
+        Portal(
+            FTPRealm('./tmp', userHome=homeDirectory),
+            [AllowAnonymousAccess(), userChecker]))
 
-def startlog():
-    log.startLogging(sys.stdout)
-
-reactor.callLater(0.1, startlog)
+reactor.listenTCP(port, ftp)
+reactor.callLater(0.1, lambda: log.startLogging(sys.stdout))
 reactor.run()
