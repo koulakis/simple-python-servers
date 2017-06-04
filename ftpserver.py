@@ -1,5 +1,3 @@
-#!/usr/local/bin/python2
-
 """
 Testing ftp server with minimal config and authentication.
 WARNING: this server is unsafe and should not be used in production.
