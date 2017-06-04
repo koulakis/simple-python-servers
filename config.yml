@@ -3,6 +3,6 @@ servers:
     port: 2121
     username: user
     password: pass
-    homeDirectory: ./tmp
+    homeDirectory: ./
   http:
     port: 8000

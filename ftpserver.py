@@ -23,7 +23,7 @@ userChecker.addUser(username, password)
 
 ftp = FTPFactory(
         Portal(
-            FTPRealm('./tmp', userHome=homeDirectory),
+            FTPRealm('./', userHome=homeDirectory),
             [AllowAnonymousAccess(), userChecker]))
 
 reactor.listenTCP(port, ftp)
