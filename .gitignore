@@ -183,3 +183,5 @@ fabric.properties
 
 ## Project specific ignores
 tmp/user
+
+.idea
